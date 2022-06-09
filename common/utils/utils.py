@@ -56,9 +56,11 @@ def win_map_net_drive():
 
     command = "net use " + server_config.get("global", "mappingLetter") + ": \\\\" + server_config.get("global",
                                                                                                        "serverIp") + server_config.get(
-        "global", "pathName").replace("/", "\\") + "/USER:" + server_config.get("user",
+        "global", "pathName").replace("/", "\\") + " /USER:" + server_config.get("user",
                                                                                 "userLogin") + " " + server_config.get(
         "user", "psswdLogin") + " /p:yes"
+
+    print(command)
 
     subprocess.Popen(command)
     time.sleep(1)

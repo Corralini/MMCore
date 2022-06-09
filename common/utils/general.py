@@ -187,13 +187,12 @@ def instruction_name_file(status="Pending") -> str:
 
 
 # Create file with instructions
-def create_instruction(content):
+def create_instruction(serverName, content):
     server_config = configparser.ConfigParser()
     server_config.read("config/server.cfg")
 
-    hostname = socket.gethostname()
     file_path = server_config.get("global",
-                                  "mappingLetter") + ":/" + hostname + "/instructions/" + instruction_name_file()
+                                  "mappingLetter") + ":/" + serverName + "/instructions/" + instruction_name_file()
 
     write_file(file_path, content)
 

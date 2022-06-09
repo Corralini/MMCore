@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify
 
 from common.model.response import Response
 from common.model.user import User
-from common.utils.general import create_user_session, get_latest_file, parse_data, get_servers
+from common.utils.general import create_user_session, get_latest_file, parse_data, get_servers, create_instruction
 from common.utils.utils import encrypt_txt, read_file, json_to_object, win_map_net_drive, win_delete_net_drive
 
 app = Flask(__name__)
@@ -14,21 +14,21 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def index():
-    return 'Welcome M&MCore API'
+    return 'Welcome MMCore API'
 
 
 @app.route('/detailed', methods=['POST'])
 def detailed():
     response = Response()
-    requestJson = request.json
-    session_path = _check_login(requestJson["userId"])
+    request_json = request.json
+    session_path = _check_login(request_json["userId"])
 
     if exists(session_path):
 
         main_config = configparser.ConfigParser()
         main_config.read("config/main.cfg")
 
-        serverName = requestJson["serverName"]
+        serverName = request_json["serverName"]
         servers_data = {}
 
         if serverName is not None and serverName != "" and get_latest_file(serverName,
@@ -62,7 +62,7 @@ def detailed():
                 last_process_file = get_latest_file(serverName, "processes")
 
                 data["processes"] = {
-                    last_process_file.stem: parse_data(json_to_object(read_file(str(last_services_file))))}
+                    last_process_file.stem: parse_data(json_to_object(read_file(str(last_process_file))))}
 
                 # End parse process
 
@@ -89,8 +89,8 @@ def detailed():
 @app.route('/', methods=['POST'])
 def home():
     response = Response()
-    requestJson = request.json
-    session_path = _check_login(requestJson["userId"])
+    request_json = request.json
+    session_path = _check_login(request_json["userId"])
 
     if exists(session_path):
 
@@ -134,6 +134,43 @@ def home():
             except ():
                 response.set_status("KO")
                 response.set_data({"error": "Unable to find data for " + server})
+
+    else:
+        response.set_status("KO")
+        response.set_data({"error": "User not login"})
+
+    return jsonify(response.__dict__)
+
+
+@app.route('/instruction', methods=['POST'])
+def send_instruction():
+    response = Response()
+    request_json = request.json
+    session_path = _check_login(request_json["userId"])
+
+    if exists(session_path):
+        server_name = request_json["serverName"]
+        data_json = request_json["data"]
+        if server_name is not None and server_name != "" and data_json is not None:
+            type = data_json["type"]
+            id = data_json["id"]
+            action = ""
+            if "action" in data_json:
+                action = data_json["action"]
+
+            instruction = ""
+
+            if type is not None and type == "service" and action is not None and id is not None:
+                instruction = str(type) + ";" + str(id) + ";" + str(action)
+            elif type is not None and type == "process" and id is not None:
+                instruction = str(type) + ";" + str(id)
+
+            create_instruction(server_name, instruction)
+            response.set_status("OK")
+
+        else:
+            response.set_status("KO")
+            response.set_data({"error": "Invalid request"})
 
     else:
         response.set_status("KO")
