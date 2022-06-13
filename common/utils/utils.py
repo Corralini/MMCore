@@ -60,8 +60,6 @@ def win_map_net_drive():
                                                                                 "userLogin") + " " + server_config.get(
         "user", "psswdLogin") + " /p:yes"
 
-    print(command)
-
     subprocess.Popen(command)
     time.sleep(1)
 

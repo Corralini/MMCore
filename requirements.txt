@@ -3,3 +3,4 @@ pypiwin32==223
 pywin32==304
 pywinservicemanager==1.0.2
 windows==0.1.1
+Flask~=2.1.2
